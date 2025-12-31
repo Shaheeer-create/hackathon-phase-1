@@ -1,55 +1,146 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+=======================================================================
+SYNC IMPACT REPORT
+=======================================================================
+Version Change: None → 1.0.0 (initial constitution)
+
+Modified Principles:
+  N/A (new constitution)
+
+Added Sections:
+  - Core Principles (3 principles)
+  - Feature Scope (3 progression levels)
+  - Tech Standards (Python 3.12+, MVC, PEP 8)
+  - AI-Native Workflow
+  - Quality Rules (testing, immutability, validation)
+  - Success Metrics
+
+Removed Sections:
+  N/A (new constitution)
+
+Templates Requiring Updates:
+  ✅ plan-template.md - No changes needed (Constitution Check section is generic)
+  ✅ spec-template.md - No changes needed (scope/requirements sections are generic)
+  ✅ tasks-template.md - No changes needed (task organization is generic)
+
+Follow-up TODOs:
+  None - All placeholders resolved
+
+=======================================================================
+-->
+
+# Todo App Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### Test-First Accuracy
+All code MUST be developed test-first with full validation. Tests MUST be written before implementation and MUST validate all behaviors and edge cases.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+**Rationale**: Test-first development ensures requirements are understood before implementation, provides living documentation, and prevents regressions.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### Clear CLI
+Command-line interface MUST be intuitive for Python developers with clear help text and sensible defaults. Usage patterns MUST follow standard CLI conventions.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+**Rationale**: Python developers expect CLI tools to behave predictably with proper argument parsing and help documentation.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### Reproducible
+All features MUST be specified via specs and achieve 100% test coverage. Development MUST be reproducible through clear specification and automated testing.
 
-### [PRINCIPLE_6_NAME]
+**Rationale**: Spec-driven development ensures features are implementable, testable, and maintainable. Full coverage guarantees confidence in code changes.
 
+## Feature Scope
 
-[PRINCIPLE__DESCRIPTION]
+### Basic (MVP)
+- Add / delete / update tasks
+- View list, mark tasks complete
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**Rationale**: Core CRUD functionality provides the minimum viable product for task management.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### Intermediate
+- Priorities / tags (high / medium / low, work / home)
+- Search / filter / sort (by keyword, status, priority, date)
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+**Rationale**: Organization features enable users to manage larger task lists effectively.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+### Advanced
+- Recurring tasks (daily / weekly)
+- Due dates with console reminders
+
+**Rationale**: Advanced automation features reduce manual task management for power users.
+
+## Tech Standards
+
+### Language and Dependencies
+Python 3.12+ MUST be used. Standard library only - specifically `argparse` for CLI and `dataclasses` for models. No external dependencies allowed.
+
+**Rationale**: Standard library ensures portability and zero-dependency installation. Modern Python versions provide powerful built-in features.
+
+### Architecture
+MVC pattern MUST be followed: Task model (dataclasses), in-memory list storage, console UI. Clear separation of concerns between model, view, and controller.
+
+**Rationale**: MVC provides maintainable structure and clear separation between data, presentation, and logic.
+
+### Code Style
+PEP 8 compliance MUST be enforced. Type hints MUST be used for all function signatures and class attributes.
+
+**Rationale**: Consistent code style improves readability and maintainability. Type hints provide documentation and catch errors early.
+
+## AI-Native Workflow
+
+### Spec-Driven Development
+All features MUST be specified via `/speckit` before implementation. Specs MUST be the authoritative source for requirements.
+
+**Rationale**: Specification-first ensures clear requirements before development and enables AI to generate accurate code.
+
+### AI Code Generation
+Code MUST be generated by AI with human validation. Generated code MUST be reviewed and tested before acceptance.
+
+**Rationale**: AI accelerates development while human review ensures quality and alignment with requirements.
+
+### Iterative Phases
+Development MUST follow iterative phases: spec → plan → tasks → implement → validate. Each phase MUST complete before advancing.
+
+**Rationale**: Iterative approach ensures each stage is validated and prevents rework.
+
+## Quality Rules
+
+### Test Coverage
+`unittest` framework MUST be used with 100% code coverage. All branches and edge cases MUST be tested.
+
+**Rationale**: 100% coverage ensures confidence in code correctness and prevents regressions.
+
+### Immutability
+Models MUST be immutable. Global state MUST be avoided. State changes MUST be explicit and traceable.
+
+**Rationale**: Immutability prevents unintended side effects and makes code easier to reason about and test.
+
+### Input Validation
+All user inputs MUST be validated. Errors MUST be clean and actionable with helpful error messages.
+
+**Rationale**: Robust input validation prevents crashes and provides good user experience.
+
+## Success Metrics
+
+- All features MUST be demonstrable via console
+- Application MUST handle 100+ concurrent tasks
+- Clean spec history MUST be maintained
+- 100% test coverage achieved
+- All tests pass with zero failures
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+### Amendment Procedure
+1. Propose change with rationale and impact assessment
+2. Update constitution document with semantic version bump
+3. Sync changes across dependent templates
+4. Communicate to all developers
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+### Versioning Policy
+- MAJOR: Backward incompatible governance/principle removals or redefinitions
+- MINOR: New principle/section added or materially expanded guidance
+- PATCH: Clarifications, wording, typo fixes, non-semantic refinements
+
+### Compliance Review
+All features and implementations MUST verify compliance with constitution principles. Violations MUST be documented with explicit justification in plan.md Complexity Tracking section.
+
+**Version**: 1.0.0 | **Ratified**: 2025-12-31 | **Last Amended**: 2025-12-31
