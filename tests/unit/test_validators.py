@@ -1,7 +1,12 @@
 """Unit tests for validation utilities."""
 
 import unittest
-from src.utils.validators import validate_priority, validate_tags, is_valid_date
+from src.utils.validators import (
+    validate_priority,
+    validate_tags,
+    is_valid_date,
+    is_valid_time,
+)
 
 # Import Priority if available for test reference
 try:
@@ -122,6 +127,42 @@ class TestValidators(unittest.TestCase):
         """Test empty date string."""
         self.assertFalse(is_valid_date(""))
         self.assertFalse(is_valid_date("   "))
+
+    # NEW: Time validation tests
+    def test_is_valid_time_valid_format(self) -> None:
+        """Test valid time format (HH:MM)."""
+        self.assertTrue(is_valid_time("00:00"))
+        self.assertTrue(is_valid_time("09:30"))
+        self.assertTrue(is_valid_time("12:00"))
+        self.assertTrue(is_valid_time("23:59"))
+
+    def test_is_valid_time_invalid_hour(self) -> None:
+        """Test invalid hour values."""
+        self.assertFalse(is_valid_time("24:00"))
+        self.assertFalse(is_valid_time("25:30"))
+        self.assertFalse(is_valid_time("-1:00"))
+
+    def test_is_valid_time_invalid_minute(self) -> None:
+        """Test invalid minute values."""
+        self.assertFalse(is_valid_time("09:60"))
+        self.assertFalse(is_valid_time("12:99"))
+
+    def test_is_valid_time_missing_leading_zero(self) -> None:
+        """Test times without leading zeros."""
+        self.assertFalse(is_valid_time("9:30"))
+        self.assertFalse(is_valid_time("1:05"))
+
+    def test_is_valid_time_wrong_format(self) -> None:
+        """Test wrong time formats."""
+        self.assertFalse(is_valid_time("09:30:00"))
+        self.assertFalse(is_valid_time("09-30"))
+        self.assertFalse(is_valid_time("09.30"))
+        self.assertFalse(is_valid_time("9:30"))
+
+    def test_is_valid_time_empty(self) -> None:
+        """Test empty time string."""
+        self.assertFalse(is_valid_time(""))
+        self.assertFalse(is_valid_time("   "))
 
 
 if __name__ == "__main__":

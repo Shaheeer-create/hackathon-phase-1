@@ -95,3 +95,30 @@ def is_valid_date(date_str: str) -> bool:
     import re
     pattern = r"^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$"
     return bool(re.match(pattern, date_str))
+
+
+def is_valid_time(time_str: str) -> bool:
+    """Check if time string matches 24-hour HH:MM format.
+
+    Args:
+        time_str: Time string to validate
+
+    Returns:
+        True if format is HH:MM (24-hour format), False otherwise
+
+    Notes:
+        Hour must be 00-23, minute must be 00-59
+
+    Examples:
+        >>> is_valid_time("09:30")
+        True
+        >>> is_valid_time("23:59")
+        True
+        >>> is_valid_time("24:00")
+        False
+        >>> is_valid_time("9:30")
+        False  # Missing leading zero
+    """
+    import re
+    pattern = r"^([01]\d|2[0-3]):([0-5]\d)$"
+    return bool(re.match(pattern, time_str))
