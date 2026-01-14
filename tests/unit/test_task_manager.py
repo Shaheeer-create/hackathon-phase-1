@@ -3,6 +3,7 @@
 import unittest
 from src.services.task_manager import TaskManager
 from src.models.task import Task
+from src.models.enums import Priority
 from src.exceptions import TaskNotFoundError, InvalidTaskError
 
 
@@ -185,6 +186,122 @@ class TestTaskManager(unittest.TestCase):
         self.manager.add_task(title="Task")
         with self.assertRaises(TaskNotFoundError):
             self.manager.toggle_complete(task_id=99)
+
+    # Tests for priority support (T024)
+    def test_add_task_with_priority(self) -> None:
+        """Test adding a task with priority."""
+        task = self.manager.add_task(title="Task", priority=Priority.HIGH)
+        self.assertEqual(task.priority, Priority.HIGH)
+
+    def test_add_task_priority_defaults_to_medium(self) -> None:
+        """Test that priority defaults to MEDIUM when not specified."""
+        task = self.manager.add_task(title="Task")
+        self.assertEqual(task.priority, Priority.MEDIUM)
+
+    def test_add_task_with_single_tag(self) -> None:
+        """Test adding a task with single tag."""
+        task = self.manager.add_task(title="Task", tags=["Work"])
+        self.assertEqual(task.tags, ["Work"])
+
+    def test_add_task_with_multiple_tags(self) -> None:
+        """Test adding a task with multiple tags."""
+        task = self.manager.add_task(title="Task", tags=["Work", "Urgent", "Project"])
+        self.assertEqual(task.tags, ["Work", "Urgent", "Project"])
+
+    def test_add_task_deduplicates_tags(self) -> None:
+        """Test that duplicate tags are deduplicated."""
+        task = self.manager.add_task(title="Task", tags=["Work", "Work", "Urgent", "Work"])
+        self.assertEqual(task.tags, ["Work", "Urgent"])
+
+    def test_add_task_with_all_enhanced_fields(self) -> None:
+        """Test adding task with all enhanced fields."""
+        task = self.manager.add_task(
+            title="Complete Task",
+            description="Full description",
+            due_date="2025-01-10",
+            priority=Priority.HIGH,
+            tags=["Work", "Documentation"]
+        )
+        self.assertEqual(task.title, "Complete Task")
+        self.assertEqual(task.description, "Full description")
+        self.assertEqual(task.due_date, "2025-01-10")
+        self.assertEqual(task.priority, Priority.HIGH)
+        self.assertEqual(task.tags, ["Work", "Documentation"])
+
+    def test_update_task_priority(self) -> None:
+        """Test updating task priority."""
+        self.manager.add_task(title="Task", priority=Priority.LOW)
+        updated = self.manager.update_task(task_id=1, priority=Priority.HIGH)
+        self.assertEqual(updated.priority, Priority.HIGH)
+
+    def test_update_task_single_tag(self) -> None:
+        """Test updating task with single tag."""
+        self.manager.add_task(title="Task")
+        updated = self.manager.update_task(task_id=1, tags=["Work"])
+        self.assertEqual(updated.tags, ["Work"])
+
+    def test_update_task_multiple_tags(self) -> None:
+        """Test updating task with multiple tags."""
+        self.manager.add_task(title="Task")
+        updated = self.manager.update_task(task_id=1, tags=["Home", "Shopping"])
+        self.assertEqual(updated.tags, ["Home", "Shopping"])
+
+    def test_update_task_deduplicates_tags(self) -> None:
+        """Test that update deduplicates tags."""
+        self.manager.add_task(title="Task", tags=["Existing"])
+        updated = self.manager.update_task(
+            task_id=1, tags=["Work", "Work", "Existing", "New"]
+        )
+        self.assertEqual(updated.tags, ["Work", "Existing", "New"])
+
+    def test_update_task_with_all_enhanced_fields(self) -> None:
+        """Test updating all enhanced fields."""
+        self.manager.add_task(title="Task")
+        updated = self.manager.update_task(
+            task_id=1,
+            title="Updated Title",
+            description="Updated Description",
+            due_date="2025-01-15",
+            priority=Priority.LOW,
+            tags=["New", "Tags"]
+        )
+        self.assertEqual(updated.title, "Updated Title")
+        self.assertEqual(updated.description, "Updated Description")
+        self.assertEqual(updated.due_date, "2025-01-15")
+        self.assertEqual(updated.priority, Priority.LOW)
+        self.assertEqual(updated.tags, ["New", "Tags"])
+
+    def test_delete_task_preserves_priority_and_tags(self) -> None:
+        """Test that delete reindexing preserves priority and tags."""
+        self.manager.add_task(
+            title="Task 1",
+            priority=Priority.HIGH,
+            tags=["Tag1", "Tag2"]
+        )
+        self.manager.add_task(title="Task 2", priority=Priority.LOW, tags=["Tag3"])
+        self.manager.add_task(title="Task 3")
+        # Delete task 1
+        self.manager.delete_task(task_id=1)
+        tasks = self.manager.list_tasks()
+        self.assertEqual(len(tasks), 2)
+        # Verify priority and tags are preserved on remaining tasks
+        self.assertEqual(tasks[0].id, 1)
+        self.assertEqual(tasks[0].title, "Task 2")
+        self.assertEqual(tasks[0].priority, Priority.LOW)
+        self.assertEqual(tasks[0].tags, ["Tag3"])
+
+    def test_toggle_complete_preserves_priority_and_tags(self) -> None:
+        """Test that toggle_complete preserves priority and tags."""
+        self.manager.add_task(
+            title="Task",
+            priority=Priority.HIGH,
+            tags=["Work", "Urgent"]
+        )
+        self.assertFalse(self.manager.get_task(task_id=1).completed)
+        updated = self.manager.toggle_complete(task_id=1)
+        self.assertTrue(updated.completed)
+        self.assertEqual(updated.priority, Priority.HIGH)
+        self.assertEqual(updated.tags, ["Work", "Urgent"])
 
 
 if __name__ == "__main__":
