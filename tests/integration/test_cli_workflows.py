@@ -10,6 +10,7 @@ from contextlib import redirect_stdout, redirect_stderr
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")))
 
 from src.services.task_manager import TaskManager
+from src.models.enums import Priority
 from src.exceptions import TaskNotFoundError
 
 
@@ -235,6 +236,112 @@ class TestCLIWorkflows(unittest.TestCase):
         self.manager.add_task(title="Task")
         with self.assertRaises(ValueError):
             self.manager.update_task(task_id=1, due_date="invalid-date")
+
+    # Enhanced field workflows (T025)
+    def test_add_task_with_priority_then_list(self) -> None:
+        """Test add task with priority and list."""
+        task = self.manager.add_task(title="Urgent task", priority=Priority.HIGH)
+
+        tasks = self.manager.list_tasks()
+        self.assertEqual(len(tasks), 1)
+        self.assertEqual(tasks[0].priority, Priority.HIGH)
+
+    def test_add_task_with_tags_then_list(self) -> None:
+        """Test add task with tags and list."""
+        task = self.manager.add_task(
+            title="Meeting", tags=["Work", "Team"]
+        )
+
+        tasks = self.manager.list_tasks()
+        self.assertEqual(len(tasks), 1)
+        self.assertEqual(tasks[0].tags, ["Work", "Team"])
+
+    def test_add_task_with_all_enhanced_then_list(self) -> None:
+        """Test add task with all enhanced fields and list."""
+        task = self.manager.add_task(
+            title="Complete project",
+            description="Finish MVP",
+            due_date="2025-01-15",
+            priority=Priority.HIGH,
+            tags=["Work", "Documentation"]
+        )
+
+        tasks = self.manager.list_tasks()
+        self.assertEqual(len(tasks), 1)
+        self.assertEqual(tasks[0].title, "Complete project")
+        self.assertEqual(tasks[0].description, "Finish MVP")
+        self.assertEqual(tasks[0].due_date, "2025-01-15")
+        self.assertEqual(tasks[0].priority, Priority.HIGH)
+        self.assertEqual(tasks[0].tags, ["Work", "Documentation"])
+
+    def test_update_priority_then_list(self) -> None:
+        """Test update priority and list."""
+        self.manager.add_task(title="Task", priority=Priority.LOW)
+        self.manager.update_task(task_id=1, priority=Priority.HIGH)
+
+        tasks = self.manager.list_tasks()
+        self.assertEqual(tasks[0].priority, Priority.HIGH)
+
+    def test_update_tags_then_list(self) -> None:
+        """Test update tags and list."""
+        self.manager.add_task(title="Task", tags=["Old"])
+        self.manager.update_task(task_id=1, tags=["New", "Tags"])
+
+        tasks = self.manager.list_tasks()
+        self.assertEqual(tasks[0].tags, ["New", "Tags"])
+
+    def test_update_all_enhanced_fields_then_list(self) -> None:
+        """Test update all enhanced fields and list."""
+        self.manager.add_task(title="Task", priority=Priority.LOW, tags=["Old"])
+        self.manager.update_task(
+            task_id=1,
+            priority=Priority.HIGH,
+            tags=["Updated", "Tags"]
+        )
+
+        tasks = self.manager.list_tasks()
+        self.assertEqual(tasks[0].priority, Priority.HIGH)
+        self.assertEqual(tasks[0].tags, ["Updated", "Tags"])
+
+    def test_complete_preserves_priority_and_tags(self) -> None:
+        """Test complete operation preserves priority and tags."""
+        task = self.manager.add_task(
+            title="Task",
+            priority=Priority.HIGH,
+            tags=["Work", "Urgent"]
+        )
+        # Complete
+        updated = self.manager.toggle_complete(task_id=1)
+
+        tasks = self.manager.list_tasks()
+        self.assertTrue(tasks[0].completed)
+        self.assertEqual(tasks[0].priority, Priority.HIGH)
+        self.assertEqual(tasks[0].tags, ["Work", "Urgent"])
+
+    def test_delete_reindexes_preserving_priority_and_tags(self) -> None:
+        """Test delete reindexes tasks preserving priority and tags."""
+        self.manager.add_task(
+            title="Task 1",
+            priority=Priority.HIGH,
+            tags=["Tag1"]
+        )
+        self.manager.add_task(
+            title="Task 2",
+            priority=Priority.LOW,
+            tags=["Tag2"]
+        )
+        self.manager.add_task(title="Task 3")
+
+        # Delete task 1
+        self.manager.delete_task(task_id=1)
+
+        tasks = self.manager.list_tasks()
+        self.assertEqual(len(tasks), 2)
+        # Verify priority and tags preserved on remaining tasks
+        self.assertEqual(tasks[0].id, 1)
+        self.assertEqual(tasks[0].title, "Task 2")
+        self.assertEqual(tasks[0].priority, Priority.LOW)
+        self.assertEqual(tasks[0].tags, ["Tag2"])
 
 
 if __name__ == "__main__":
